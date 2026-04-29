@@ -1,158 +1,142 @@
-```html
+```html id="b4m8q2"
 <!DOCTYPE html>
 <html lang="ku" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kurdish POS</title>
+<title>POS System</title>
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#f2f2f2;
-margin:0;
-padding:20px;
-direction:rtl;
-}
-.container{
-max-width:900px;
-margin:auto;
-background:white;
-padding:20px;
-border-radius:14px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
-}
-h1{
-text-align:center;
-color:#0b8a3b;
-}
-input,button{
-padding:10px;
-margin:5px;
-border-radius:8px;
-border:1px solid #ccc;
-font-size:16px;
-}
-button{
-background:#0b8a3b;
-color:white;
-cursor:pointer;
-border:none;
-}
-button:hover{
-opacity:0.9;
-}
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-gap:10px;
-}
-.card{
-background:#fafafa;
-padding:10px;
-border-radius:10px;
-border:1px solid #ddd;
-text-align:center;
-}
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-}
-th,td{
-padding:10px;
-border-bottom:1px solid #ddd;
-text-align:center;
-}
-.total{
-font-size:22px;
-margin-top:15px;
-font-weight:bold;
-color:#0b8a3b;
-}
-.small{
-font-size:14px;
-color:#666;
-}
+body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}
+.wrap{max-width:950px;margin:auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.top{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+input,select,button{padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px}
+button{cursor:pointer;background:#0b8a3b;color:#fff;border:none}
+button:hover{opacity:.92}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:10px;border-bottom:1px solid #ddd;text-align:center}
+.total{font-size:24px;font-weight:bold;margin-top:15px}
+.note{color:#666;font-size:14px;margin-top:10px}
+h1{margin:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="container">
-<h1>سیستەمی فرۆشتن</h1>
+<div class="top">
+<h1 id="title">سیستەمی فرۆشتن</h1>
 
-<h3>زیادکردنی کاڵا</h3>
-<input id="name" placeholder="ناوی کاڵا">
-<input id="price" type="number" placeholder="نرخ">
-<button onclick="addProduct()">زیاد بکە</button>
+<select id="lang" onchange="setLang()">
+<option value="ku">Kurdish</option>
+<option value="en">English</option>
+<option value="ar">Arabic</option>
+</select>
+</div>
 
-<h3>کاڵاکان</h3>
-<div id="products" class="grid"></div>
+<div style="margin-top:15px">
+<input id="barcode" placeholder="بارکۆد بنووسە و Enter بکە" autofocus>
+</div>
 
-<h3>سەبەتە</h3>
 <table>
 <thead>
 <tr>
-<th>کاڵا</th>
-<th>ژمارە</th>
-<th>نرخ</th>
+<th id="c1">کاڵا</th>
+<th id="c2">ژمارە</th>
+<th id="c3">نرخ</th>
 </tr>
 </thead>
 <tbody id="cart"></tbody>
 </table>
 
-<div class="total">کۆی گشتی: <span id="total">0</span> IQD</div>
+<div class="total"><span id="tlabel">کۆی گشتی</span>: <span id="total">0</span> IQD</div>
 
-<button onclick="checkout()">پارەدان</button>
-<button onclick="clearAll()">سڕینەوە</button>
+<div class="actions">
+<button onclick="printReceipt()" id="receiptBtn">پسووڵە</button>
+<button onclick="checkout()" id="payBtn">پارەدان</button>
+<button onclick="clearCart()" id="clearBtn">سڕینەوە</button>
+</div>
 
-<p class="small">هەموو زانیاریەکان لەسەر ئامێرەکەت دەپارێزرێن.</p>
+<div class="note" id="note">هیچ کاڵایەک زیاد نەکراوە. خۆت بارکۆدەکان داخل بکە.</div>
+
 </div>
 
 <script>
-let products = JSON.parse(localStorage.getItem("products")) || [
-{name:"پەپسی",price:500},
-{name:"نان",price:250},
-{name:"چیپس",price:750}
-];
-
+let products = JSON.parse(localStorage.getItem("products")) || [];
 let cart = [];
 
-function saveProducts(){
+if(products.length===0){
+products = [
+{code:"1001",name_ku:"پەپسی",name_en:"Pepsi",name_ar:"بيبسي",price:500},
+{code:"1002",name_ku:"نان",name_en:"Bread",name_ar:"خبز",price:250},
+{code:"1003",name_ku:"چیپس",name_en:"Chips",name_ar:"شيبس",price:750}
+];
 localStorage.setItem("products",JSON.stringify(products));
 }
 
-function renderProducts(){
-let box=document.getElementById("products");
-box.innerHTML="";
-products.forEach((p,i)=>{
-box.innerHTML += `
-<div class="card">
-<h4>${p.name}</h4>
-<p>${p.price} IQD</p>
-<button onclick="addToCart(${i})">زیاد بکە بۆ سەبەتە</button>
-</div>
-`;
+let lang="ku";
+
+function productName(p){
+if(lang==="en") return p.name_en;
+if(lang==="ar") return p.name_ar;
+return p.name_ku;
+}
+
+function setLang(){
+lang=document.getElementById("lang").value;
+
+const txt={
+ku:{
+title:"سیستەمی فرۆشتن", c1:"کاڵا", c2:"ژمارە", c3:"نرخ",
+total:"کۆی گشتی", receipt:"پسووڵە", pay:"پارەدان", clear:"سڕینەوە",
+placeholder:"بارکۆد بنووسە و Enter بکە",
+note:"هیچ کاڵایەک زیاد نەکراوە. خۆت بارکۆدەکان داخل بکە."
+},
+en:{
+title:"POS System", c1:"Item", c2:"Qty", c3:"Price",
+total:"Total", receipt:"Receipt", pay:"Pay", clear:"Clear",
+placeholder:"Type barcode and press Enter",
+note:"No items included. Add your own barcodes."
+},
+ar:{
+title:"نظام البيع", c1:"المنتج", c2:"الكمية", c3:"السعر",
+total:"المجموع", receipt:"الإيصال", pay:"دفع", clear:"مسح",
+placeholder:"اكتب الباركود واضغط Enter",
+note:"لا توجد منتجات مضافة. أضف الباركود بنفسك."
+}
+}[lang];
+
+document.getElementById("title").innerText=txt.title;
+document.getElementById("c1").innerText=txt.c1;
+document.getElementById("c2").innerText=txt.c2;
+document.getElementById("c3").innerText=txt.c3;
+document.getElementById("tlabel").innerText=txt.total;
+document.getElementById("receiptBtn").innerText=txt.receipt;
+document.getElementById("payBtn").innerText=txt.pay;
+document.getElementById("clearBtn").innerText=txt.clear;
+document.getElementById("barcode").placeholder=txt.placeholder;
+document.getElementById("note").innerText=txt.note;
+
+renderCart();
+}
+
+document.getElementById("barcode").addEventListener("keydown",function(e){
+if(e.key==="Enter"){
+addByBarcode(this.value.trim());
+this.value="";
+}
 });
-}
 
-function addProduct(){
-let name=document.getElementById("name").value;
-let price=document.getElementById("price").value;
-if(name && price){
-products.push({name:name,price:Number(price)});
-saveProducts();
-renderProducts();
-document.getElementById("name").value="";
-document.getElementById("price").value="";
+function addByBarcode(code){
+let p=products.find(x=>x.code===code);
+if(!p){
+alert("Barcode not found");
+return;
 }
-}
-
-function addToCart(i){
-let found=cart.find(x=>x.name===products[i].name);
+let found=cart.find(x=>x.code===code);
 if(found){
 found.qty++;
 }else{
-cart.push({name:products[i].name,price:products[i].price,qty:1});
+cart.push({...p,qty:1});
 }
 renderCart();
 }
@@ -167,7 +151,7 @@ let sum=item.price*item.qty;
 total+=sum;
 box.innerHTML += `
 <tr>
-<td>${item.name}</td>
+<td>${productName(item)}</td>
 <td>${item.qty}</td>
 <td>${sum}</td>
 </tr>
@@ -177,25 +161,36 @@ box.innerHTML += `
 document.getElementById("total").innerText=total;
 }
 
+function printReceipt(){
+let text="";
+cart.forEach(i=>{
+text += productName(i)+" x"+i.qty+" - "+(i.qty*i.price)+" IQD\n";
+});
+
+let win=window.open("","","width=350,height=600");
+win.document.write("<pre style='font-size:18px'>" +
+"Receipt\n------------------\n"+
+text+
+"------------------\n"+
+"Total: "+document.getElementById("total").innerText+" IQD\n"+
+new Date().toLocaleString()+
+"</pre>");
+win.print();
+}
+
 function checkout(){
-if(cart.length==0){
-alert("سەبەتە بەتاڵە");
-return;
-}
-alert("فرۆشتن تەواو بوو");
+alert("Done");
 cart=[];
 renderCart();
 }
 
-function clearAll(){
+function clearCart(){
 cart=[];
 renderCart();
 }
 
-renderProducts();
-renderCart();
+setLang();
 </script>
-
 </body>
 </html>
 ```
