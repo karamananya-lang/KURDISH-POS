@@ -194,3 +194,167 @@ setLang();
 </body>
 </html>
 ```
+
+<div id="loginBox">
+  <h2>Login</h2>
+  <input id="user" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="app" style="display:none;">
+  <button onclick="logout()">Logout</button>
+  
+  <h3>Add Product</h3>
+  <input id="pName" placeholder="Name">
+  <input id="pCode" placeholder="Barcode">
+  <input id="pPrice" type="number" placeholder="Price">
+  <button onclick="addProduct()">Add</button>
+
+  <h3>Products</h3>
+  <div id="list"></div>
+</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>POS System</title>
+<style>
+body{font-family:Arial;background:#f4f4f4;padding:20px}
+.box{max-width:800px;margin:auto;background:#fff;padding:20px;border-radius:10px}
+input,button{padding:10px;margin:5px;width:100%;box-sizing:border-box}
+button{background:#0b8a3b;color:#fff;border:none;cursor:pointer}
+button:hover{opacity:0.9}
+.hidden{display:none}
+.item{padding:10px;border:1px solid #ddd;margin:5px;border-radius:5px}
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<!-- REGISTER -->
+<div id="registerBox">
+<h2>Create Account</h2>
+<input id="rUser" placeholder="Username">
+<input id="rPass" type="password" placeholder="Password">
+<button onclick="register()">Create Account</button>
+</div>
+
+<!-- LOGIN -->
+<div id="loginBox">
+<h2>Login</h2>
+<input id="lUser" placeholder="Username">
+<input id="lPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+<h2>POS SYSTEM</h2>
+<button onclick="logout()">Logout</button>
+
+<h3>Add Product</h3>
+<input id="pName" placeholder="Name">
+<input id="pCode" placeholder="Barcode">
+<input id="pPrice" type="number" placeholder="Price">
+<button onclick="addProduct()">Add</button>
+
+<h3>Products</h3>
+<div id="list"></div>
+
+</div>
+
+</div>
+
+<script>
+
+// USERS
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let currentUser = localStorage.getItem("logged");
+
+// PRODUCTS
+let products = JSON.parse(localStorage.getItem("products")) || [];
+
+function register(){
+let u = document.getElementById("rUser").value;
+let p = document.getElementById("rPass").value;
+
+if(!u || !p) return alert("Fill all");
+
+users.push({user:u,pass:p});
+localStorage.setItem("users",JSON.stringify(users));
+
+alert("Account created");
+}
+
+function login(){
+let u = document.getElementById("lUser").value;
+let p = document.getElementById("lPass").value;
+
+let found = users.find(x=>x.user===u && x.pass===p);
+
+if(found){
+localStorage.setItem("logged",u);
+showApp();
+}else{
+alert("Wrong login");
+}
+}
+
+function logout(){
+localStorage.removeItem("logged");
+location.reload();
+}
+
+function showApp(){
+document.getElementById("registerBox").style.display="none";
+document.getElementById("loginBox").style.display="none";
+document.getElementById("app").classList.remove("hidden");
+render();
+}
+
+function addProduct(){
+let name=document.getElementById("pName").value;
+let code=document.getElementById("pCode").value;
+let price=document.getElementById("pPrice").value;
+
+if(!name||!code||!price) return;
+
+products.push({name,code,price:Number(price)});
+localStorage.setItem("products",JSON.stringify(products));
+
+render();
+}
+
+function deleteProduct(i){
+products.splice(i,1);
+localStorage.setItem("products",JSON.stringify(products));
+render();
+}
+
+function render(){
+let box=document.getElementById("list");
+box.innerHTML="";
+
+products.forEach((p,i)=>{
+box.innerHTML+=`
+<div class="item">
+<b>${p.name}</b><br>
+${p.price} IQD<br>
+<button onclick="deleteProduct(${i})">Delete</button>
+</div>
+`;
+});
+}
+
+// AUTO LOGIN CHECK
+if(currentUser){
+showApp();
+}
+
+</script>
+
+</body>
+</html>
