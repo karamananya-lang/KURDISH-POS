@@ -1,0 +1,201 @@
+```html
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kurdish POS</title>
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f2f2f2;
+margin:0;
+padding:20px;
+direction:rtl;
+}
+.container{
+max-width:900px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:14px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+h1{
+text-align:center;
+color:#0b8a3b;
+}
+input,button{
+padding:10px;
+margin:5px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:16px;
+}
+button{
+background:#0b8a3b;
+color:white;
+cursor:pointer;
+border:none;
+}
+button:hover{
+opacity:0.9;
+}
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:10px;
+}
+.card{
+background:#fafafa;
+padding:10px;
+border-radius:10px;
+border:1px solid #ddd;
+text-align:center;
+}
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+th,td{
+padding:10px;
+border-bottom:1px solid #ddd;
+text-align:center;
+}
+.total{
+font-size:22px;
+margin-top:15px;
+font-weight:bold;
+color:#0b8a3b;
+}
+.small{
+font-size:14px;
+color:#666;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>سیستەمی فرۆشتن</h1>
+
+<h3>زیادکردنی کاڵا</h3>
+<input id="name" placeholder="ناوی کاڵا">
+<input id="price" type="number" placeholder="نرخ">
+<button onclick="addProduct()">زیاد بکە</button>
+
+<h3>کاڵاکان</h3>
+<div id="products" class="grid"></div>
+
+<h3>سەبەتە</h3>
+<table>
+<thead>
+<tr>
+<th>کاڵا</th>
+<th>ژمارە</th>
+<th>نرخ</th>
+</tr>
+</thead>
+<tbody id="cart"></tbody>
+</table>
+
+<div class="total">کۆی گشتی: <span id="total">0</span> IQD</div>
+
+<button onclick="checkout()">پارەدان</button>
+<button onclick="clearAll()">سڕینەوە</button>
+
+<p class="small">هەموو زانیاریەکان لەسەر ئامێرەکەت دەپارێزرێن.</p>
+</div>
+
+<script>
+let products = JSON.parse(localStorage.getItem("products")) || [
+{name:"پەپسی",price:500},
+{name:"نان",price:250},
+{name:"چیپس",price:750}
+];
+
+let cart = [];
+
+function saveProducts(){
+localStorage.setItem("products",JSON.stringify(products));
+}
+
+function renderProducts(){
+let box=document.getElementById("products");
+box.innerHTML="";
+products.forEach((p,i)=>{
+box.innerHTML += `
+<div class="card">
+<h4>${p.name}</h4>
+<p>${p.price} IQD</p>
+<button onclick="addToCart(${i})">زیاد بکە بۆ سەبەتە</button>
+</div>
+`;
+});
+}
+
+function addProduct(){
+let name=document.getElementById("name").value;
+let price=document.getElementById("price").value;
+if(name && price){
+products.push({name:name,price:Number(price)});
+saveProducts();
+renderProducts();
+document.getElementById("name").value="";
+document.getElementById("price").value="";
+}
+}
+
+function addToCart(i){
+let found=cart.find(x=>x.name===products[i].name);
+if(found){
+found.qty++;
+}else{
+cart.push({name:products[i].name,price:products[i].price,qty:1});
+}
+renderCart();
+}
+
+function renderCart(){
+let box=document.getElementById("cart");
+box.innerHTML="";
+let total=0;
+
+cart.forEach(item=>{
+let sum=item.price*item.qty;
+total+=sum;
+box.innerHTML += `
+<tr>
+<td>${item.name}</td>
+<td>${item.qty}</td>
+<td>${sum}</td>
+</tr>
+`;
+});
+
+document.getElementById("total").innerText=total;
+}
+
+function checkout(){
+if(cart.length==0){
+alert("سەبەتە بەتاڵە");
+return;
+}
+alert("فرۆشتن تەواو بوو");
+cart=[];
+renderCart();
+}
+
+function clearAll(){
+cart=[];
+renderCart();
+}
+
+renderProducts();
+renderCart();
+</script>
+
+</body>
+</html>
+```
