@@ -358,3 +358,192 @@ showApp();
 
 </body>
 </html>
+```html id="d1s9c0"
+<!-- DISCOUNT + COUPON BUTTONS -->
+<button onclick="toggleDiscountBox()" id="discountBtn">Discount</button>
+<button onclick="createCoupon()" id="couponBtn">Create Coupon</button>
+
+<!-- DISCOUNT PANEL -->
+<div id="discountBox" style="display:none; margin-top:10px; padding:12px; border:2px solid #999; border-radius:10px;">
+  <input id="discountAmount" type="number" placeholder="">
+  <input id="couponCode" placeholder="">
+  <button onclick="applyDiscount()" id="applyBtn">Apply</button>
+</div>
+
+<script>
+/* ---------- DATA ---------- */
+let discount = 0;
+let couponDiscount = 0;
+let coupons = JSON.parse(localStorage.getItem("coupons")) || {};
+
+/* ---------- LANGUAGE ---------- */
+function setLang(l){
+lang = l;
+
+const txt = {
+ku:{
+discount:"داشکاندن",
+coupon:"دروستکردنی کۆپۆن",
+apply:"جێبەجێکردن",
+discountPlace:"بڕی داشکاندن",
+couponPlace:"کۆدی کۆپۆن",
+askCode:"کۆدی کۆپۆن بنووسە",
+askPrice:"بڕی داشکاندنی کۆپۆن",
+made:"کۆپۆن دروستکرا",
+bad:"کۆپۆن نەدۆزرایەوە",
+discLine:"داشکاندن",
+couponLine:"کۆپۆن"
+},
+en:{
+discount:"Discount",
+coupon:"Create Coupon",
+apply:"Apply",
+discountPlace:"Discount Amount",
+couponPlace:"Coupon Code",
+askCode:"Enter coupon code",
+askPrice:"Enter coupon value",
+made:"Coupon created",
+bad:"Coupon not found",
+discLine:"Discount",
+couponLine:"Coupon"
+},
+ar:{
+discount:"خصم",
+coupon:"إنشاء كوبون",
+apply:"تطبيق",
+discountPlace:"قيمة الخصم",
+couponPlace:"رمز الكوبون",
+askCode:"اكتب رمز الكوبون",
+askPrice:"اكتب قيمة الكوبون",
+made:"تم إنشاء الكوبون",
+bad:"الكوبون غير موجود",
+discLine:"الخصم",
+couponLine:"الكوبون"
+}
+}[lang];
+
+document.getElementById("discountBtn").innerText = txt.discount;
+document.getElementById("couponBtn").innerText = txt.coupon;
+document.getElementById("applyBtn").innerText = txt.apply;
+document.getElementById("discountAmount").placeholder = txt.discountPlace;
+document.getElementById("couponCode").placeholder = txt.couponPlace;
+}
+
+/* ---------- OPEN PANEL ---------- */
+function toggleDiscountBox(){
+let box = document.getElementById("discountBox");
+box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+/* ---------- CREATE COUPON ---------- */
+function createCoupon(){
+let code = prompt(
+lang==="ku" ? "کۆدی کۆپۆن بنووسە" :
+lang==="ar" ? "اكتب رمز الكوبون" :
+"Enter coupon code"
+);
+
+if(!code) return;
+
+let value = prompt(
+lang==="ku" ? "بڕی داشکاندن بنووسە" :
+lang==="ar" ? "اكتب قيمة الكوبون" :
+"Enter coupon value"
+);
+
+if(!value) return;
+
+coupons[code] = Number(value);
+localStorage.setItem("coupons", JSON.stringify(coupons));
+
+alert(
+lang==="ku" ? "کۆپۆن دروستکرا ✔" :
+lang==="ar" ? "تم إنشاء الكوبون ✔" :
+"Coupon created ✔"
+);
+}
+
+/* ---------- APPLY DISCOUNT ---------- */
+function applyDiscount(){
+discount = Number(document.getElementById("discountAmount").value) || 0;
+
+let code = document.getElementById("couponCode").value.trim();
+
+couponDiscount = 0;
+
+if(code){
+if(coupons[code]){
+couponDiscount = Number(coupons[code]);
+}else{
+alert(
+lang==="ku" ? "کۆپۆن نەدۆزرایەوە" :
+lang==="ar" ? "الكوبون غير موجود" :
+"Coupon not found"
+);
+}
+}
+
+renderCart();
+}
+
+/* ---------- CHANGE TOTAL ---------- */
+function renderCart(){
+let box = document.getElementById("cart");
+box.innerHTML = "";
+let total = 0;
+
+cart.forEach(item=>{
+let sum = item.price * item.qty;
+total += sum;
+
+box.innerHTML += `
+<tr>
+<td>${productName(item)}</td>
+<td>${item.qty}</td>
+<td>${sum}</td>
+</tr>
+`;
+});
+
+let finalTotal = total - discount - couponDiscount;
+if(finalTotal < 0) finalTotal = 0;
+
+document.getElementById("total").innerText = finalTotal;
+}
+
+/* ---------- RECEIPT ---------- */
+function printReceipt(){
+let text = "";
+
+cart.forEach(i=>{
+text += productName(i)+" x"+i.qty+" - "+(i.qty*i.price)+" IQD\n";
+});
+
+text += "------------------\n";
+
+text += (
+lang==="ku" ? "داشکاندن: " :
+lang==="ar" ? "الخصم: " :
+"Discount: "
+) + discount + " IQD\n";
+
+text += (
+lang==="ku" ? "کۆپۆن: " :
+lang==="ar" ? "الكوبون: " :
+"Coupon: "
+) + couponDiscount + " IQD\n";
+
+text += "------------------\n";
+
+text += (
+lang==="ku" ? "کۆی گشتی: " :
+lang==="ar" ? "المجموع: " :
+"Total: "
+) + document.getElementById("total").innerText + " IQD\n";
+
+let win = window.open("","","width=350,height=600");
+win.document.write("<pre style='font-size:18px'>" + text + "</pre>");
+win.print();
+}
+</script>
+```
