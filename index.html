@@ -547,3 +547,82 @@ win.print();
 }
 </script>
 ```
+<script>
+
+function addProduct(){
+
+let name = document.getElementById("pName").value;
+let code = document.getElementById("pCode").value;
+let price = document.getElementById("pPrice").value;
+
+if(!name || !code || !price){
+alert("Fill all fields");
+return;
+}
+
+/* FIXED PRODUCT SAVE */
+products.push({
+code: code,
+
+/* MULTI LANGUAGE NAMES */
+name_ku: name,
+name_en: name,
+name_ar: name,
+
+price: Number(price)
+});
+
+localStorage.setItem("products", JSON.stringify(products));
+
+/* CLEAR INPUTS */
+document.getElementById("pName").value = "";
+document.getElementById("pCode").value = "";
+document.getElementById("pPrice").value = "";
+
+render();
+
+}
+
+/* FIXED PRODUCT LIST */
+function render(){
+
+let box = document.getElementById("list");
+box.innerHTML = "";
+
+products.forEach((p,i)=>{
+
+box.innerHTML += `
+<div class="item">
+
+<b>${productName(p)}</b><br>
+
+${p.price} IQD<br>
+Barcode: ${p.code}<br>
+
+<button onclick="deleteProduct(${i})">
+Delete
+</button>
+
+</div>
+`;
+
+});
+
+}
+
+/* FIXED PRODUCT NAME */
+function productName(p){
+
+if(lang === "en"){
+return p.name_en || p.name || "Unknown";
+}
+
+if(lang === "ar"){
+return p.name_ar || p.name || "Unknown";
+}
+
+return p.name_ku || p.name || "Unknown";
+
+}
+
+</script>
